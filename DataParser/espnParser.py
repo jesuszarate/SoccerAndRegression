@@ -9,7 +9,11 @@ def parseDate(date):
     if date is not None:
     #TODO: Ensure date is in the correct format
         print date
-        darr = date.split('/')
+        darr = ''
+        if '/' in date:
+            darr = date.split('/')
+        elif '-' in date:
+            darr = date.split('-')
         return darr[2] + darr[0] + darr[1]
 
 def parse(date):
