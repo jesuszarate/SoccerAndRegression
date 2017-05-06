@@ -5,9 +5,10 @@ import requests
 import argparse
 import json
 
+
 def parseDate(date):
     if date is not None:
-    #TODO: Ensure date is in the correct format
+        # TODO: Ensure date is in the correct format
         print date
         darr = ''
         if '/' in date:
@@ -16,30 +17,43 @@ def parseDate(date):
             darr = date.split('-')
         return darr[2] + darr[0] + darr[1]
 
+
+def getMatchResult(score):
+    if score[0] > score[1]:
+        return ["Win", "Loss"]
+    elif score[1] > score[0]:
+        return ["Loss", "Win"]
+    else:
+        return ["tie", "tie"]
+
 def parse(date):
     lines = getWebPage(date)
 
     matches = []
     for line in lines:
 
-        print line.contents[0].find_all("a", {"class":"team-name"})[0].find_all("span")[0].text + ' ' + \
-            line.contents[0].find_all("span", {"class":"record"})[0].find_all("a")[0].text + ' ' + \
-            line.contents[1].find_all("a", {"class":"team-name"})[0].find_all("span")[0].text             
+        print line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text + ' ' + \
+              line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text + ' ' + \
+              line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
 
-        home = line.contents[0].find_all("a", {"class":"team-name"})[0].find_all("span")[0].text
-        away = line.contents[1].find_all("a", {"class":"team-name"})[0].find_all("span")[0].text
-        score = line.contents[0].find_all("span", {"class":"record"})[0].find_all("a")[0].text.split(' - ')
-        
+        home = line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
+        away = line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
+        score = line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text.split(' - ')
+
+        homeRes, awayRes = getMatchResult(score)
+
         if len(score) > 1:
-            gameObj = {'home' : 
-                       {'name' : home,'score': score[0]},
-                           'away' :{'name' : away,'score': score[1]}}
+            gameObj = {'home': {'name': home, 'score': score[0], 'result': homeRes },
+                       'away': {'name': away, 'score': score[1], 'result': awayRes }}
         else:
-            gameObj = {'home' : 
-                       {'name' : home,'score': 0},
-                           'away' :{'name' : away,'score': 0}}
-            #print(json.dumps(gameObj))
+            gameObj = {'home': {'name': home, 'score': 0, 'result': "tie" },
+                       'away': {'name': away, 'score': 0, 'result': "tie"}}
+
+            # print(json.dumps(gameObj))
         matches.append(gameObj)
+
+    with open('data.txt', 'w') as outfile:
+        json.dump(matches, outfile)
     return matches
 
 
@@ -55,7 +69,7 @@ def getWebPage(date):
 
     soup = BeautifulSoup(r.content, "lxml")
 
-    lines = soup.find_all("tr", {"class":["odd","even"]})
+    lines = soup.find_all("tr", {"class": ["odd", "even"]})
     return lines
 
 
@@ -64,18 +78,19 @@ def writeMatchesToFile(date):
 
     matches = []
     for line in lines:
-        home = cleanUpTeamName(line.contents[0].find_all("a", {"class":"team-name"})[0].find_all("span")[0].text) + ','
-        score = line.contents[0].find_all("span", {"class":"record"})[0].find_all("a")[0].text + ',' 
-        away = cleanUpTeamName(line.contents[1].find_all("a", {"class":"team-name"})[0].find_all("span")[0].text) + ',\n'
+        home = cleanUpTeamName(line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text) + ','
+        score = line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text + ','
+        away = cleanUpTeamName(
+            line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text) + ',\n'
         match = home + score + away
-        
+
         print match
         matches.append(match)
-    
-    writeToFile(matches);
+
+    writeToFile(matches)
 
 
-def writeToFile(lines):    
+def writeToFile(lines):
     file = 'matches.txt'
     with open(file, 'w') as f:
         for line in lines:
@@ -92,9 +107,9 @@ def cleanUpTeamName(teamName):
         if teamName.startswith('L'):
             return 'Leon'
     return teamName
-        
 
-d = "04/22/2016" #input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
+
+d = "04/22/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
 parse(d)
 
 ''' REMOVE THIS WHEN I WANT TO USE ON IT'S OWN
