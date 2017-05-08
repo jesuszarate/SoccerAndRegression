@@ -4,11 +4,13 @@ from bs4 import BeautifulSoup
 import requests
 import argparse
 import json
+import re
+
 
 
 def parseDate(date):
     if date is not None:
-        # TODO: Ensure date is in the correct format
+
         print date
         darr = ''
         if '/' in date:
@@ -29,6 +31,34 @@ def getMatchResult(score):
 def parse(date):
     lines = getWebPage(date)
 
+    # matches = []
+    # for line in lines:
+    #
+    #     print line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text + ' ' + \
+    #           line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text + ' ' + \
+    #           line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
+    #
+    #     home = line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
+    #     away = line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
+    #     score = line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text.split(' - ')
+    #
+    #     homeRes, awayRes = getMatchResult(score)
+    #
+    #     if len(score) > 1:
+    #         gameObj = {'home': {'name': home, 'score': score[0], 'result': homeRes },
+    #                    'away': {'name': away, 'score': score[1], 'result': awayRes }}
+    #     else:
+    #         gameObj = {'home': {'name': home, 'score': 0, 'result': "tie" },
+    #                    'away': {'name': away, 'score': 0, 'result': "tie"}}
+    #
+    #     matches.append(gameObj)
+    #
+    # # Write matches to json file
+    # with open('data.json', 'w') as outfile:
+    #     json.dump(matches, outfile)
+    # return matches
+
+def parseMatch(lines):
     matches = []
     for line in lines:
 
@@ -49,11 +79,7 @@ def parse(date):
             gameObj = {'home': {'name': home, 'score': 0, 'result': "tie" },
                        'away': {'name': away, 'score': 0, 'result': "tie"}}
 
-            # print(json.dumps(gameObj))
         matches.append(gameObj)
-
-    with open('data.txt', 'w') as outfile:
-        json.dump(matches, outfile)
     return matches
 
 
@@ -69,8 +95,26 @@ def getWebPage(date):
 
     soup = BeautifulSoup(r.content, "lxml")
 
-    lines = soup.find_all("tr", {"class": ["odd", "even"]})
-    return lines
+    acutalDate = soup.findAll("div", {"id" : "sched-container"})
+    print acutalDate[0].contents[0].find_all("a", {"class": "team-name"})
+    print acutalDate[0].contents[1]
+
+    matches = {}
+    currentDate = ""
+    for content in acutalDate[0].contents:
+
+        if re.match(".+,\s[0-3][0-9]\s.+", content.text):
+            currentDate = content.text
+        else:
+            teams = content.find_all("tr", {"class": ["odd", "even"]})
+            if len(teams) > 0:
+                matches[currentDate] = parseMatch(teams)
+
+
+    #lines = soup.find_all("tr", {"class": ["odd", "even"]})
+    with open('data.json', 'w') as outfile:
+        json.dump(matches, outfile)
+    return matches
 
 
 def writeMatchesToFile(date):
@@ -89,7 +133,6 @@ def writeMatchesToFile(date):
 
     writeToFile(matches)
 
-
 def writeToFile(lines):
     file = 'matches.txt'
     with open(file, 'w') as f:
@@ -97,7 +140,6 @@ def writeToFile(lines):
             print line
             f.write(line.encode('utf8'))
     print 'Information saved to ' + file
-
 
 # Needed for some unicode characters from mexican teams
 def cleanUpTeamName(teamName):
@@ -109,8 +151,11 @@ def cleanUpTeamName(teamName):
     return teamName
 
 
-d = "04/22/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
+d = "04/23/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
 parse(d)
+
+#def parseYear():
+
 
 ''' REMOVE THIS WHEN I WANT TO USE ON IT'S OWN
 parser = argparse.ArgumentParser()
