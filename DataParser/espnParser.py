@@ -28,35 +28,22 @@ def getMatchResult(score):
     else:
         return ["tie", "tie"]
 
-def parse(date):
-    lines = getWebPage(date)
+def parseScheduleContainer(date):
+    scheduleContainer = getPageScheduleContainer(date)
 
-    # matches = []
-    # for line in lines:
-    #
-    #     print line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text + ' ' + \
-    #           line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text + ' ' + \
-    #           line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
-    #
-    #     home = line.contents[0].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
-    #     away = line.contents[1].find_all("a", {"class": "team-name"})[0].find_all("span")[0].text
-    #     score = line.contents[0].find_all("span", {"class": "record"})[0].find_all("a")[0].text.split(' - ')
-    #
-    #     homeRes, awayRes = getMatchResult(score)
-    #
-    #     if len(score) > 1:
-    #         gameObj = {'home': {'name': home, 'score': score[0], 'result': homeRes },
-    #                    'away': {'name': away, 'score': score[1], 'result': awayRes }}
-    #     else:
-    #         gameObj = {'home': {'name': home, 'score': 0, 'result': "tie" },
-    #                    'away': {'name': away, 'score': 0, 'result': "tie"}}
-    #
-    #     matches.append(gameObj)
-    #
-    # # Write matches to json file
-    # with open('data.json', 'w') as outfile:
-    #     json.dump(matches, outfile)
-    # return matches
+    matches = {}
+    currentDate = ""
+    for content in scheduleContainer[0].contents:
+
+        # Match day, 00 month
+        if re.match(".+,\s[0-3][0-9]\s.+", content.text):
+            currentDate = content.text
+        else:
+            teams = content.find_all("tr", {"class": ["odd", "even"]})
+            if len(teams) > 0:
+                matches[currentDate] = parseMatch(teams)
+
+    return matches
 
 def parseMatch(lines):
     matches = []
@@ -83,7 +70,7 @@ def parseMatch(lines):
     return matches
 
 
-def getWebPage(date):
+def getPageScheduleContainer(date):
     if date is None:
         return None
     date = parseDate(date)
@@ -95,30 +82,13 @@ def getWebPage(date):
 
     soup = BeautifulSoup(r.content, "lxml")
 
-    acutalDate = soup.findAll("div", {"id" : "sched-container"})
-    print acutalDate[0].contents[0].find_all("a", {"class": "team-name"})
-    print acutalDate[0].contents[1]
+    scheduleContainer = soup.findAll("div", {"id" : "sched-container"})
 
-    matches = {}
-    currentDate = ""
-    for content in acutalDate[0].contents:
-
-        if re.match(".+,\s[0-3][0-9]\s.+", content.text):
-            currentDate = content.text
-        else:
-            teams = content.find_all("tr", {"class": ["odd", "even"]})
-            if len(teams) > 0:
-                matches[currentDate] = parseMatch(teams)
-
-
-    #lines = soup.find_all("tr", {"class": ["odd", "even"]})
-    with open('data.json', 'w') as outfile:
-        json.dump(matches, outfile)
-    return matches
+    return scheduleContainer
 
 
 def writeMatchesToFile(date):
-    lines = getWebPage(date)
+    lines = getPageScheduleContainer(date)
 
     matches = []
     for line in lines:
@@ -152,7 +122,7 @@ def cleanUpTeamName(teamName):
 
 
 d = "04/23/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
-parse(d)
+parseScheduleContainer(d)
 
 #def parseYear():
 
