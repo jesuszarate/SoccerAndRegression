@@ -6,8 +6,6 @@ import argparse
 import json
 import re
 
-
-
 def parseDate(date):
     if date is not None:
 
@@ -18,7 +16,6 @@ def parseDate(date):
         elif '-' in date:
             darr = date.split('-')
         return darr[2] + darr[0] + darr[1]
-
 
 def getMatchResult(score):
     if score[0] > score[1]:
@@ -69,7 +66,6 @@ def parseMatch(lines):
         matches.append(gameObj)
     return matches
 
-
 def getPageScheduleContainer(date):
     if date is None:
         return None
@@ -85,7 +81,6 @@ def getPageScheduleContainer(date):
     scheduleContainer = soup.findAll("div", {"id" : "sched-container"})
 
     return scheduleContainer
-
 
 def writeMatchesToFile(date):
     lines = getPageScheduleContainer(date)
@@ -111,6 +106,10 @@ def writeToFile(lines):
             f.write(line.encode('utf8'))
     print 'Information saved to ' + file
 
+def writeToJsonFile(matches):
+    with open('data.json', 'w') as outfile:
+        json.dump(matches, outfile)
+
 # Needed for some unicode characters from mexican teams
 def cleanUpTeamName(teamName):
     if not teamName.isalpha():
@@ -121,8 +120,30 @@ def cleanUpTeamName(teamName):
     return teamName
 
 
-d = "04/23/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
+d = "04/02/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
+
 parseScheduleContainer(d)
+
+# matches = {}
+# for d in range(0, 3):
+#     for dd in range(1, 10):
+#         day = "04/" + str(d) + str(dd) + "/2016"
+#         print day
+#         #matches.update(parseScheduleContainer(day))
+
+#print matches
+
+import datetime
+matches = {}
+
+d = datetime.date(2017, 01, 01)
+endDate = datetime.date(2017, 12, 31)
+delta = datetime.timedelta(days=1)
+while d <= endDate:
+    day = d.strftime("%m/%d/%Y")
+    matches.update(parseScheduleContainer(day))
+    d += delta
+
 
 #def parseYear():
 
