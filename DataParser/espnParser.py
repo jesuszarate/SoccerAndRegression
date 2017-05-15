@@ -5,6 +5,7 @@ import requests
 import argparse
 import json
 import re
+import datetime
 
 def parseDate(date):
     if date is not None:
@@ -122,8 +123,6 @@ def cleanUpTeamName(teamName):
 
 d = "04/02/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
 
-parseScheduleContainer(d)
-
 # matches = {}
 # for d in range(0, 3):
 #     for dd in range(1, 10):
@@ -133,19 +132,19 @@ parseScheduleContainer(d)
 
 #print matches
 
-import datetime
-matches = {}
+def parseYear(year):
+    matches = {}
 
-d = datetime.date(2017, 01, 01)
-endDate = datetime.date(2017, 12, 31)
-delta = datetime.timedelta(days=1)
-while d <= endDate:
-    day = d.strftime("%m/%d/%Y")
-    matches.update(parseScheduleContainer(day))
-    d += delta
+    d = datetime.date(year, 01, 01)
+    endDate = datetime.date(year, 12, 31)
+    delta = datetime.timedelta(days=1)
+    while d <= endDate:
+        day = d.strftime("%m/%d/%Y")
+        matches.update(parseScheduleContainer(day))
+        d += delta
 
+    writeToJsonFile(matches)
 
-#def parseYear():
 
 
 ''' REMOVE THIS WHEN I WANT TO USE ON IT'S OWN
