@@ -132,19 +132,24 @@ d = "04/02/2016"  # input("Date of the page you want parsed, is the following fo
 
 #print matches
 
-def parseYear(year):
+def parseInRange(startDate="01/01/2017", endDate="12/31/2017"):
     matches = {}
 
-    d = datetime.date(year, 01, 01)
-    endDate = datetime.date(year, 12, 31)
+    sDate = startDate.split("/")
+    eDate = endDate.split("/")
+    startDate = datetime.date(int(sDate[2]), int(sDate[0]), int(sDate[1]))
+    endDate = datetime.date(int(eDate[2]), int(eDate[0]), int(eDate[1]))
+
     delta = datetime.timedelta(days=1)
-    while d <= endDate:
-        day = d.strftime("%m/%d/%Y")
+    while startDate <= endDate:
+        day = startDate.strftime("%m/%d/%Y")
         matches.update(parseScheduleContainer(day))
-        d += delta
+        startDate += delta
 
     writeToJsonFile(matches)
+    return matches
 
+parseInRange("01/01/2017", "01/05/2017")
 
 
 ''' REMOVE THIS WHEN I WANT TO USE ON IT'S OWN
