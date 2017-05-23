@@ -123,14 +123,6 @@ def cleanUpTeamName(teamName):
 
 d = "04/02/2016"  # input("Date of the page you want parsed, is the following format mm/dd/yyyy\n")
 
-# matches = {}
-# for d in range(0, 3):
-#     for dd in range(1, 10):
-#         day = "04/" + str(d) + str(dd) + "/2016"
-#         print day
-#         #matches.update(parseScheduleContainer(day))
-
-#print matches
 
 def parseInRange(startDate="01/01/2017", endDate="12/31/2017"):
     matches = {}
@@ -150,18 +142,3 @@ def parseInRange(startDate="01/01/2017", endDate="12/31/2017"):
     return matches
 
 parseInRange("01/01/2017", "01/05/2017")
-
-
-''' REMOVE THIS WHEN I WANT TO USE ON IT'S OWN
-parser = argparse.ArgumentParser()
-parser.add_argument("date", help="Date of the page you want parsed, is the following format mm/dd/yyyy",
-                    type=str)
-args = parser.parse_args()
-
-#parse(args.date)
-print args.date
-parse(args.date)
-#writeMatchesToFile(args.date)
-
-#cleanUpTeamName('Querétaro')
-'''
